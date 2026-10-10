@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title_suffix %} · Overview{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ dashboard_title }}</h1>
+    <p>Where, when, and how road crashes happen in Echague — a working reference for prioritizing enforcement, engineering, and emergency response.</p>
+  </div>
+  <details class="overview-download"><summary>Download report</summary><div><a class="btn secondary" id="data-export" href="/api/export/data.xlsx">Records · Excel</a><a class="btn secondary" id="analysis-pdf" href="/api/export/analysis.pdf">Analysis · PDF</a><p class="hint">Uses the selected Overview filters.</p></div></details>
+</div>
+
+<div class="filter-bar">
+  <div class="field">
+    <label>From year</label>
+    <div class="select-wrap">{{ icon('calendar', 'icon-sm') }}<select id="year-from-filter"></select></div>
+  </div>
+  <div class="field">
+    <label>To year</label>
+    <div class="select-wrap">{{ icon('calendar', 'icon-sm') }}<select id="year-to-filter"></select></div>
+  </div>
+  <div class="field">
+    <label>Barangay</label>
+    <div class="select-wrap">{{ icon('map-pin', 'icon-sm') }}<select id="barangay-filter"><option value="">All barangays</option></select></div>
+  </div>
+  <div class="field">
+    <label>Collision type</label>
+    <div class="select-wrap">{{ icon('route', 'icon-sm') }}<select id="collision-filter"><option value="">All collision types</option></select></div>
+  </div>
+  <div class="field">
+    <label>Cause</label>
+    <div class="select-wrap">{{ icon('circle-alert', 'icon-sm') }}<select id="cause-filter"><option value="">All causes</option></select></div>
+  </div>
+  <button class="btn secondary" id="reset-filters" style="align-self:flex-end;">{{ icon('x', 'icon-sm') }} Reset</button>
+</div>
+
+<div class="kpi-strip" id="kpi-strip"></div><div id="overview-error" role="alert"></div>
+
+<!-- ============ WHEN: temporal patterns ============ -->
+<div class="section-header">
+  {{ icon('clock', 'icon-sm') }}
+  <div><h2>When crashes happen</h2><p>Yearly changes, monthly totals, and the times with the most records.</p></div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:16px;">
+  <div class="panel">
+    <div class="panel-title-row">
+      {{ icon('trending-up') }}
+      <div class="panel-title">Crash records over the years <span class="hint">yearly totals · the latest year may be incomplete</span></div>
+    </div>
+    <div class="chart-box" style="height:320px;"><canvas id="monthly-chart"></canvas></div>
+  </div>
+  <div class="panel"><div class="panel-title-row">{{ icon('calendar') }}<div class="panel-title">Crashes by month <span class="hint">all selected years combined</span></div></div><div class="chart-box" style="height:320px"><canvas id="month-distribution-chart"></canvas></div></div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:28px;">
+  <div class="panel">
+    <div class="breadcrumb-bar" id="hour-breadcrumb" style="display:none;">
+      <button data-back="hour">{{ icon('chevron-up', 'icon-sm') }} All hours</button>
+      <span class="crumb-current" id="hour-crumb-label"></span>
+    </div>
+    <div class="panel-title-row">{{ icon('clock') }}<div class="panel-title">Crashes by hour of day <span class="hint">click a bar to check fatality</span></div></div>
+    <div class="chart-scroll"><div class="chart-box hour-chart-wide" style="height:280px;"><canvas id="hour-chart"></canvas></div></div>
+    <div class="insight-callout" id="hour-insight"></div>
+  </div>
+  <div class="panel">
+    <div class="breadcrumb-bar" id="day-breadcrumb" style="display:none;">
+      <button data-back="day">{{ icon('chevron-up', 'icon-sm') }} All days</button>
+      <span class="crumb-current" id="day-crumb-label"></span>
+    </div>
+    <div class="panel-title-row">{{ icon('users') }}<div class="panel-title">Crashes by day of week <span class="hint">highest to lowest · click for severity</span></div></div>
+    <div class="chart-box" style="height:280px;"><canvas id="day-chart"></canvas></div>
+    <div class="insight-callout" id="day-insight"></div>
+  </div>
+</div>
+
+<!-- ============ WHAT: cause and mechanism ============ -->
+<div class="section-header">
+  {{ icon('circle-alert', 'icon-sm') }}
+  <div><h2>What's behind them</h2><p>Leading causes, how vehicles collide, and which vehicle types are involved.</p></div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:16px;">
+  <div class="panel">
+    <div class="breadcrumb-bar" id="cause-breadcrumb" style="display:none;">
+      <button data-back="cause">{{ icon('chevron-up', 'icon-sm') }} All causes</button>
+      <span class="crumb-current" id="cause-crumb-label"></span>
+    </div>
+    <div class="panel-title-row">{{ icon('circle-alert') }}<div class="panel-title">Leading causes <span class="hint">click a bar to check fatality</span></div></div>
+    <div class="chart-box" style="height:300px;"><canvas id="cause-chart"></canvas></div>
+    <div class="insight-callout" id="cause-insight"></div>
+  </div>
+  <div class="panel">
+    <div class="breadcrumb-bar" id="collision-breadcrumb" style="display:none;">
+      <button data-back="collision">{{ icon('chevron-up', 'icon-sm') }} All collision types</button>
+      <span class="crumb-current" id="collision-crumb-label"></span>
+    </div>
+    <div class="panel-title-row">{{ icon('route') }}<div class="panel-title">Collision types <span class="hint">click a bar to check fatality</span></div></div>
+    <div class="chart-box" style="height:240px;"><canvas id="collision-chart"></canvas></div>
+    <div class="insight-callout" id="collision-insight"></div>
+  </div>
+</div>
+
+<div class="grid" style="margin-bottom:28px;">
+  <div class="panel">
+    <div class="breadcrumb-bar" id="vehicle-breadcrumb" style="display:none;">
+      <button data-back="vehicle">{{ icon('chevron-up', 'icon-sm') }} All vehicle types</button>
+      <span class="crumb-current" id="vehicle-crumb-label"></span>
+    </div>
+    <div class="panel-title-row">{{ icon('car') }}<div class="panel-title">Vehicle involved <span class="hint">top 10 &middot; click a bar to check fatality</span></div></div>
+    <div class="chart-box" style="height:340px;"><canvas id="vehicle-chart"></canvas></div>
+    <div class="insight-callout" id="vehicle-insight"></div>
+  </div>
+</div>
+
+<!-- ============ WHERE: spatial pattern ============ -->
+<div class="section-header">
+  {{ icon('map-pin', 'icon-sm') }}
+  <div><h2>Where crashes cluster</h2><p>The top 5 barangays by total crashes, and when their crashes happen.</p></div>
+</div>
+
+<div class="grid" style="margin-bottom:16px;">
+  <div class="panel">
+    <div class="breadcrumb-bar" id="barangay-breadcrumb" style="display:none;">
+      <button data-back="barangay">{{ icon('chevron-up', 'icon-sm') }} All barangays</button>
+      <span class="crumb-current" id="barangay-crumb-label"></span>
+    </div>
+    <div class="panel-title-row">{{ icon('map-pin') }}<div class="panel-title">Top 5 barangays <span class="hint">click a bar to check fatality</span></div></div>
+    <div class="chart-box" style="height:260px;"><canvas id="barangay-chart"></canvas></div>
+    <div class="insight-callout" id="barangay-insight"></div>
+  </div>
+</div>
+
+<div class="grid" style="margin-bottom:16px;">
+  <div class="panel">
+    <div class="panel-title-row">{{ icon('users') }}<div class="panel-title">Top 5 barangays by day of week</div></div>
+    <div class="chart-scroll"><div class="chart-box chart-wide" style="height:350px;"><canvas id="barangay-day-chart"></canvas></div></div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="panel">
+    <div class="panel-title-row">{{ icon('calendar') }}<div class="panel-title">Top 5 barangays by month</div></div>
+    <div class="chart-scroll"><div class="chart-box chart-wide-month" style="height:350px;"><canvas id="barangay-month-chart"></canvas></div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/chart.umd.js') }}"></script>
+<script src="{{ url_for('static', filename='js/overview.js') }}"></script>
+{% endblock %}

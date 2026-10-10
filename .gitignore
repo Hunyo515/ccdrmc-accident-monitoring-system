@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+cache/*
+!cache/.gitkeep
+*.pyc
+
+.pytest_tmp*/
+.pytest_cache/
+tmp/
+output/

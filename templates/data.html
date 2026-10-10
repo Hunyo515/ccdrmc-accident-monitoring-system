@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title_suffix %} · Data{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static',filename='css/data-workspace.css') }}">{% endblock %}
+{% block content %}
+<div class="data-workspace">
+<div class="page-header"><div><h1>Data</h1></div><div class="page-header-controls"><button class="btn secondary" id="manual-entry">Add one record</button><a class="btn" href="/upload">Upload file</a></div></div>
+<section class="panel">
+  <div class="table-toolbar"><div><h2>All data</h2></div></div>
+  <p class="hint">Select a row to view or edit. Scroll across to see all columns.</p>
+  <div class="dataset-controls"><label>Show <select id="data-size"><option>10</option><option>25</option><option>50</option><option>100</option></select> entries</label><label>Search <input type="search" id="data-search" placeholder="Search records"></label></div>
+  <div class="table-toolbar" style="margin-top:20px"><span id="data-count" class="hint"></span><span id="data-updated" class="hint"></span></div>
+  <div class="preview-scroll data-scroll"><table class="preview-table" id="data-table"></table></div>
+  <div class="pagination"><span id="data-page"></span><div><button id="data-prev">Previous</button><button id="data-next">Next</button></div></div>
+  <div id="data-error" role="alert"></div>
+</section>
+<details class="panel import-history" id="import-history"><summary>Import history</summary><div id="history-content"></div><div class="pagination"><span id="history-count"></span><div><button id="history-prev">Previous</button><button id="history-next">Next</button></div></div></details>
+<dialog id="record-dialog" class="record-dialog"><div class="table-toolbar"><h2 id="record-title">Record</h2><button type="button" class="btn secondary" id="close-record">Close</button></div><div id="record-body"></div></dialog>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static',filename='js/data.js') }}"></script>{% endblock %}

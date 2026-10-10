@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title_suffix %} · Accident Map{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/maplibre/maplibre-gl.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
+{% endblock %}
+{% block content %}
+<div class="page-header"><div>
+  <p class="map-eyebrow">ECHAGUE, ISABELA / ROAD SAFETY</p>
+  <h1>Accident Heatmap</h1>
+  <p>Explore recorded crash counts across the barangay areas of Echague.</p>
+</div></div>
+<div class="map-filters">
+  <div class="field"><label for="m-year">Year</label><select id="m-year"><option value="">All years</option></select></div>
+  <div class="field"><label for="m-barangay">Barangay</label><div class="combo">
+    {{ icon('search', 'combo-icon') }}
+    <input type="text" id="m-barangay" placeholder="All barangays" autocomplete="off">
+    <div class="combo-list" id="l-barangay"></div>
+  </div></div>
+  <div class="field"><label for="m-severity">Severity</label><select id="m-severity">
+    <option value="">All records</option><option value="Fatal">Fatal only</option><option value="Non-Fatal">Non-fatal only</option>
+  </select></div>
+  <button class="btn secondary" id="m-reset">{{ icon('x', 'icon-sm') }} Reset filters</button>
+</div>
+<div class="map-workspace">
+  <section class="map-canvas-card" aria-label="Municipal accident map">
+    <div class="map-toolbar"><span><strong>Echague</strong> <span class="map-muted">Municipal extent</span></span>
+      <div><label><input type="checkbox" id="m-points"> Crash points</label><button class="btn secondary" id="m-fit">Fit municipality</button></div>
+    </div>
+    <div id="accident-map" role="region" aria-label="Interactive Echague barangay crash map" data-barangays="{{ url_for('static', filename='geo/echague-barangays.geojson') }}" data-boundary="{{ url_for('static', filename='geo/echague.geojson') }}" data-style="{{ url_for('static', filename='geo/openfreemap-liberty.json') }}"></div>
+    <div class="map-legend"><span class="heat-scale-legend">Fewer crashes <span class="heat-scale-bar"></span> More crashes</span><span>━ Barangay boundaries</span></div>
+    <p id="map-status" role="status" aria-live="polite">Loading municipal map…</p>
+    <p id="map-tile-status" role="status" hidden>Street tiles are unavailable. The municipal boundary and crash data remain available.</p>
+  </section>
+  <aside class="map-insights">
+    <div class="map-insight-heading"><span class="map-eyebrow">SELECTED RECORDS</span><h2 id="map-count">—</h2><p id="map-coverage">Checking coordinate coverage…</p></div>
+    <h3>Barangay crash counts</h3>
+    <p class="map-muted">Ranked by recorded barangay, including records that cannot be plotted.</p>
+    <ol id="map-ranking" class="map-ranking"></ol>
+    <p class="map-method">Color spreads within each barangay according to its recorded crash count, including records without usable coordinates. Red indicates higher counts; orange indicates lower counts. Soft edges are a visual treatment, not estimated crash locations within a barangay. Unshaded areas have no matched records for these filters.</p>
+  </aside>
+</div>
+<p class="map-source">Municipality: NAMRIA / PSA / OCHA via <a href="https://www.geoboundaries.org/" target="_blank" rel="noopener">geoBoundaries</a>, 2020, CC BY 3.0 IGO. Barangays: <a href="https://github.com/faeldon/philippines-json-maps" target="_blank" rel="noopener">Philippines JSON Maps</a>, 2019 edition, MIT. Simplified boundaries for visualization; not legal boundary determinations. Street tiles require internet access.</p>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/maplibre/maplibre-gl.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/barangay-heat.js') }}"></script>
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+{% endblock %}
+

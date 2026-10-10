@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title_suffix %} · Dataset preview{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static',filename='css/data-workspace.css') }}">{% endblock %}
+{% block content %}
+<div class="data-workspace">
+<a class="back-link" href="/data">← Back to Data</a>
+<div class="page-header"><h1>Upload data</h1></div>
+<section class="panel">
+  <div class="upload-drop" id="upload-drop" role="button" tabindex="0" aria-label="Choose a data file">{{ icon('upload') }}<p><b>Choose a file</b> or drag it here</p><span class="hint">CSV, TSV or Excel (.xlsx)</span><span id="upload-filename" class="hint"></span></div>
+  <input type="file" id="upload-input" accept=".csv,.tsv,.xlsx" hidden>
+  <div id="upload-result" role="status" aria-live="polite"></div>
+  <label id="sheet-field" class="worksheet-choice" hidden>Worksheet <select id="sheet-name"></select></label>
+</section>
+<section class="panel dataset-panel" id="preview-panel" hidden>
+  <div class="table-toolbar"><h2 id="preview-heading" tabindex="-1">Dataset preview</h2><div class="dataset-tabs" role="group" aria-label="Preview values"><button type="button" id="view-original" aria-pressed="true">Original data</button><button type="button" id="view-cleaned" aria-pressed="false">Cleaned data</button></div></div>
+  <div id="date-choice" class="attention-card" hidden><label for="date-format-choice">Some dates could mean two different days. Which format does this file use?</label><select id="date-format-choice"><option value="auto">Choose a date format</option value="day_first">Day / month / year (03/04 = 3 April)</option><option value="month_first">Month / day / year (03/04 = March 4)</option></select></div>
+  <div class="dataset-actions"><div id="ready-summary" role="status"></div><button class="btn" id="confirm-import" disabled>Add records</button></div>
+  <div class="dataset-controls"><label>Show <select id="preview-size"><option>10</option><option>25</option><option>50</option><option>100</option></select> entries</label><label>Search <input type="search" id="preview-search" placeholder="Search this dataset"></label></div>
+  <div class="preview-scroll data-scroll"><table class="preview-table" id="preview-table"></table></div>
+  <div class="pagination"><span id="preview-count"></span><div><button id="preview-prev">Previous</button><button id="preview-next">Next</button></div></div>
+  <h3 class="dataset-name" id="dataset-name"></h3><dl class="dataset-stats" id="dataset-stats"></dl>
+  <details><summary>Column information</summary><div class="preview-scroll"><table class="preview-table"><thead><tr><th>Column</th><th>Missing values</th><th>Unique values</th><th>Data type</th><th>Use</th><th>Filled values</th></tr></thead><tbody id="variable-info"></tbody></table></div></details>
+  <details><summary>Processing summary</summary><div id="engineering-summary"></div></details>
+  <div class="dataset-outcome" id="cleaning-summary"></div>
+  <div class="import-footer"><div><button class="btn secondary" id="download-excluded" hidden>Download excluded rows</button><a class="btn secondary" id="open-data" href="/data" hidden>View all data</a></div></div>
+</section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/upload.js') }}"></script>{% endblock %}

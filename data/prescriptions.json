@@ -1,0 +1,599 @@
+{
+  "version": 2,
+  "source": "Supplied CCDRMC catalog; implementation status preserved; expert revalidation required",
+  "prescriptions": [
+    {
+      "id": "ENF-01",
+      "agency": "enforcement",
+      "status": "Candidate",
+      "applies_when": "\"Over Speeding\" recorded as cause",
+      "action": "Deploy a mobile patrol on the route during the flagged time window.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "cause",
+            "values": [
+              "Over Speeding"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENF-02",
+      "agency": "enforcement",
+      "status": "Candidate",
+      "applies_when": "\"Alcohol Intake\" recorded as cause",
+      "action": "Run a checkpoint focused on the identified time window.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "cause",
+            "values": [
+              "Alcohol Intake"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENF-03",
+      "agency": "enforcement",
+      "status": "Candidate",
+      "applies_when": "Weekend-night temporal cluster (Friday–Sunday, 8PM–12MN or similar)",
+      "action": "Checkpoints and patrol prioritized on weekend nights.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "day",
+            "values": [
+              "Friday",
+              "Saturday",
+              "Sunday"
+            ]
+          },
+          {
+            "feature": "time_period",
+            "values": [
+              "8:01PM-12MN",
+              "12:01AM-4AM"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENF-04",
+      "agency": "enforcement",
+      "status": "Candidate",
+      "applies_when": "Barangay recurring-incident pattern (any cause)",
+      "action": "Prioritize the barangay for localized patrol scheduling.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "barangay"
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENF-05",
+      "agency": "enforcement",
+      "status": "Candidate",
+      "applies_when": "Tricycle involved in hotspot pattern",
+      "action": "Check tricycle franchise compliance and roadworthiness at the hotspot.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "vehicle_involved",
+            "values": [
+              "Tricycle"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENF-06",
+      "agency": "enforcement",
+      "status": "Candidate",
+      "applies_when": "Hotspot barangay + weekend-night cluster identified together",
+      "action": "Position a speed-gun/radar unit at the specific entry point(s) into the hotspot corridor, not just a general patrol presence.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "barangay"
+          },
+          {
+            "feature": "day",
+            "values": [
+              "Friday",
+              "Saturday",
+              "Sunday"
+            ]
+          },
+          {
+            "feature": "time_period",
+            "values": [
+              "8:01PM-12MN",
+              "12:01AM-4AM"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENF-07",
+      "agency": "enforcement",
+      "status": "Candidate",
+      "applies_when": "Motorcycle-involved hotspot with no recorded helmet-compliance data",
+      "action": "Add helmet-use compliance checks to existing checkpoints in motorcycle-dominant barangays.",
+      "active": false,
+      "inactive_reason": "The dataset has no helmet-compliance records.",
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENF-08",
+      "agency": "enforcement",
+      "status": "Candidate",
+      "applies_when": "\"Wrong Overtaking\" recorded as cause on a specific stretch",
+      "action": "Position enforcement specifically at the identified overtaking hotspot during peak travel periods, paired with the LGU Engineering signage request for that stretch.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "cause",
+            "values": [
+              "Wrong Overtaking"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENF-09",
+      "agency": "enforcement",
+      "status": "Candidate",
+      "applies_when": "Unregistered/unlicensed tricycle or motorcycle repeatedly cited in a barangay",
+      "action": "Escalate to a joint checkpoint with LTO/LTFRB for registration and franchise verification.",
+      "active": false,
+      "inactive_reason": "The dataset has no citation or violation records.",
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENF-10",
+      "agency": "enforcement",
+      "status": "Candidate",
+      "applies_when": "School-zone or market-zone barangay with elevated daytime incident count",
+      "action": "Post a barangay traffic aide during school arrival/dismissal or market peak hours.",
+      "active": false,
+      "inactive_reason": "The dataset does not say which barangays have school or market zones.",
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENF-11",
+      "agency": "enforcement",
+      "status": "Candidate",
+      "applies_when": "Private-vehicle-dominant hotspot (car/SUV/pick-up)",
+      "action": "Include seatbelt and child-restraint compliance checks in routine checkpoints for that area.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "vehicle_involved",
+            "values": [
+              "Car",
+              "SUV",
+              "Pick-up"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENF-12",
+      "agency": "enforcement",
+      "status": "Candidate",
+      "applies_when": "System-wide, on each dataset refresh",
+      "action": "Re-issue the patrol schedule whenever the mined rules or hotspot ranking change materially.",
+      "active": false,
+      "inactive_reason": "This describes how the system should behave after a refresh, not a condition found in a pattern.",
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENG-01",
+      "agency": "engineering",
+      "status": "Implemented",
+      "applies_when": "\"Over Speeding\" recorded as cause",
+      "action": "Install speed bumps, rumble strips, and speed-limit signage at the hotspot.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "cause",
+            "values": [
+              "Over Speeding"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENG-02",
+      "agency": "engineering",
+      "status": "Implemented",
+      "applies_when": "\"Head-on Hit\" is the leading collision type",
+      "action": "Install centerline barriers/markings and \"keep right\" signage.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "collision_type",
+            "values": [
+              "Head-on Hit"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENG-03",
+      "agency": "engineering",
+      "status": "Implemented",
+      "applies_when": "\"Rear-end Hit\" is the leading collision type",
+      "action": "Add advance-warning signage and improve stopping-sight distance.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "collision_type",
+            "values": [
+              "Rear-end Hit"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENG-04",
+      "agency": "engineering",
+      "status": "Implemented",
+      "applies_when": "\"Slippery Road\" recorded as cause",
+      "action": "Prioritize road-surface repair and drainage improvement; install wet-road warning signage.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "cause",
+            "values": [
+              "Slippery Road"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENG-05",
+      "agency": "engineering",
+      "status": "Implemented",
+      "applies_when": "\"Environmental Factor\" recorded as cause / evening-night hotspot",
+      "action": "Improve street lighting, drainage, and roadside vegetation clearing.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "cause",
+            "values": [
+              "Environmental Factor"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENG-06",
+      "agency": "engineering",
+      "status": "Implemented",
+      "applies_when": "\"Hit and Run\" is the leading collision type",
+      "action": "Evaluate CCTV/traffic-camera installation at the recurring point.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "collision_type",
+            "values": [
+              "Hit and Run"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENG-07",
+      "agency": "engineering",
+      "status": "Candidate",
+      "applies_when": "\"Side-swipe Hit\" is the leading collision type",
+      "action": "Review lane width and repaint lane markings at the narrow or merging segment identified.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "collision_type",
+            "values": [
+              "Side-swipe Hit"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENG-08",
+      "agency": "engineering",
+      "status": "Candidate",
+      "applies_when": "Pedestrian involved in a hotspot pattern",
+      "action": "Install or repaint a pedestrian crossing and improve lighting at the hotspot.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "vehicle_involved",
+            "values": [
+              "Pedestrian"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENG-09",
+      "agency": "engineering",
+      "status": "Candidate",
+      "applies_when": "Bicycle involved in a hotspot pattern",
+      "action": "Evaluate bike-lane markings or a shoulder allowance at the hotspot.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "vehicle_involved",
+            "values": [
+              "Bicycle"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENG-10",
+      "agency": "engineering",
+      "status": "Candidate",
+      "applies_when": "\"Loss of Control\" recorded as cause on a curve/embankment section",
+      "action": "Install guardrails or edge barriers at the identified curve.",
+      "active": false,
+      "inactive_reason": "The dataset has no road-geometry information (curves, embankments, intersections).",
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENG-11",
+      "agency": "engineering",
+      "status": "Candidate",
+      "applies_when": "Barangay ranks in the top-N hotspot list for two consecutive dataset refreshes",
+      "action": "Commission a formal Road Safety Audit (RSA) for that barangay's road network, following DPWH/DOTr RSA methodology.",
+      "active": false,
+      "inactive_reason": "This depends on how rankings change across data refreshes, which the system does not track.",
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENG-12",
+      "agency": "engineering",
+      "status": "Candidate",
+      "applies_when": "\"Wrong Overtaking\" recorded as cause near an intersection or curve",
+      "action": "Clear roadside vegetation and review sightlines at the identified overtaking hotspot.",
+      "active": false,
+      "inactive_reason": "The dataset has no road-geometry information (curves, embankments, intersections).",
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "ENG-14",
+      "agency": "engineering",
+      "status": "Candidate",
+      "applies_when": "\"Animal on Road\" recorded as cause",
+      "action": "Install animal-crossing warning signage; coordinate fencing with the barangay.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "cause",
+            "values": [
+              "Animal on Road"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "IEC-01",
+      "agency": "education",
+      "status": "Implemented",
+      "applies_when": "Leading recorded cause, town-wide or per barangay",
+      "action": "Run a road-safety education campaign on that cause.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "cause",
+            "exclude": [
+              "Unknown"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "IEC-02",
+      "agency": "education",
+      "status": "Implemented",
+      "applies_when": "Motorcycle-type vehicles ≥ 50% of local records",
+      "action": "Focus rider-safety messaging (helmet use, lane position, speed) on motorcycle-type vehicles.",
+      "active": false,
+      "inactive_reason": "This depends on the overall share of motorcycle records, not on any single pattern.",
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "IEC-03",
+      "agency": "education",
+      "status": "Implemented",
+      "applies_when": "\"Alcohol Intake\" recorded as cause",
+      "action": "Run an anti-drunk-driving awareness campaign in barangays with recurring alcohol-linked incidents.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "cause",
+            "values": [
+              "Alcohol Intake"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "IEC-04",
+      "agency": "education",
+      "status": "Implemented",
+      "applies_when": "\"Mechanical Failure\" recorded as cause",
+      "action": "Include pre-trip inspection reminders (brakes, tires, lights) in driver-facing IEC materials.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "cause",
+            "values": [
+              "Mechanical Failure"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "IEC-05",
+      "agency": "education",
+      "status": "Implemented",
+      "applies_when": "Weekend/Sunday temporal cluster",
+      "action": "Circulate family/leisure-travel safety reminders ahead of the weekend.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "day",
+            "values": [
+              "Saturday",
+              "Sunday"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "IEC-06",
+      "agency": "education",
+      "status": "Candidate",
+      "applies_when": "Pedestrian involved in a hotspot pattern",
+      "action": "Run pedestrian safety awareness messaging (crossing points, visibility at night) for that area.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "vehicle_involved",
+            "values": [
+              "Pedestrian"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "IEC-07",
+      "agency": "education",
+      "status": "Candidate",
+      "applies_when": "Hotspot barangay identified in the top-N ranking",
+      "action": "Deploy localized tarpaulins/signage at the corridor itself (\"Accident-Prone Area — Slow Down\") rather than only general campaign materials.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "barangay"
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "IEC-08",
+      "agency": "education",
+      "status": "Candidate",
+      "applies_when": "Hotspot barangay identified in the top-N ranking",
+      "action": "Post social media / SMS advisories when conditions matching the hotspot's cause.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "barangay"
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    },
+    {
+      "id": "IEC-09",
+      "agency": "education",
+      "status": "Candidate",
+      "applies_when": "Tricycle/PUV-dominant barangay",
+      "action": "Run defensive-driving seminars for tricycle/PUV drivers via barangay assemblies, coordinated with the local operators' association.",
+      "active": true,
+      "match": {
+        "all": [
+          {
+            "feature": "vehicle_involved",
+            "values": [
+              "Tricycle",
+              "E-Trike",
+              "Jeep",
+              "Bus",
+              "Multicab"
+            ]
+          }
+        ]
+      },
+      "validation_status": "Imported catalog · revalidation required"
+    }
+  ]
+}

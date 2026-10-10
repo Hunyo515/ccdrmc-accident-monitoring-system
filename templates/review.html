@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title_suffix %} · Review records{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static',filename='css/data-workspace.css') }}">{% endblock %}
+{% block content %}
+<div class="data-workspace">
+<div class="page-header"><div><h1>Review records</h1><p>Correct and verify each record. Only approved records enter the analysis.</p></div><a class="btn secondary" href="/data">Back to Data</a></div>
+<ol class="workflow-steps" aria-label="Review progress"><li><b>✓</b> Records prepared</li><li aria-current="step"><b>2</b> Check and correct</li><li><b>3</b> Approve for analysis</li></ol>
+<div class="review-guide"><strong>Check the details below, then save your review.</strong><span>Automatic cleaning is shown for each record. When records are ready, approve them to update the dashboard.</span></div>
+<div id="review-message" role="status" aria-live="polite"></div>
+<div class="panel review-toolbar"><label>Show <select id="review-filter"><option value="pending">Waiting for approval</option><option value="ready">Ready to approve</option><option value="needs_review">Needs checking</option><option value="duplicate">Possible duplicates</option><option value="conflict">Changed records</option><option value="all">All records</option></select></label><span id="review-count" role="status"></span><button class="btn" id="approve-ready">Approve ready records</button><p class="hint approval-help" id="approval-help">Save a checked record to enable approval.</p></div>
+<div class="review-layout"><section class="panel"><h2>Records in this batch</h2><div id="draft-list" class="draft-list"></div><div class="pagination"><span id="review-page"></span><div><button id="review-prev">Previous</button><button id="review-next">Next</button></div></div></section><section class="panel" id="draft-editor"><p>Select a record to review.</p></section></div>
+</div>
+{% endblock %}
+{% block scripts %}<script>window.REVIEW_BATCH={{ batch_id|tojson }};</script><script src="{{ url_for('static',filename='js/review.js') }}"></script>{% endblock %}

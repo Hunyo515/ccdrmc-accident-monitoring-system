@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title_suffix %} · Patterns{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1>Patterns</h1><p>Review recurring crash conditions and their suggested actions.</p></div><div class="page-header-controls"><a class="btn secondary" id="patterns-export" href="/api/export/patterns.csv">Export patterns CSV</a><button class="help-trigger" id="explorer-help-btn">{{ icon('circle-help', 'icon-sm') }} Reading this table</button></div></div>
+<div class="panel" style="margin-bottom:20px">
+  <div class="pattern-controls">
+    <label class="field">Search patterns<input type="search" id="search-box" placeholder="Cause, barangay, vehicle or time"></label>
+    <label class="field">Show top<input type="number" id="pattern-limit" min="1" max="5000" value="10"></label>
+    <label class="field">Rank by<select id="pattern-sort"><option value="lift">Connection strength</option><option value="confidence">Match rate</option><option value="support">Share of records</option></select></label>
+  </div>
+  <details class="threshold-settings"><summary>Pattern thresholds</summary>  <div class="grid grid-3">
+    <div class="range-row"><label for="support-range">Share of all records (support) <span id="support-val">0.05</span></label><input type="range" id="support-range" min="0.05" max="1" step="0.01" value="0.05"></div>
+    <div class="range-row"><label for="confidence-range">Match rate (confidence) <span id="confidence-val">0.60</span></label><input type="range" id="confidence-range" min="0" max="1" step="0.01" value="0.60"></div>
+    <div class="range-row"><label for="lift-range">Connection strength (lift) <span id="lift-val">1.20</span></label><input type="range" id="lift-range" min="0" max="5" step="0.05" value="1.20"></div>
+  </div>
+  </details>
+</div>
+<section class="panel patterns-panel">
+  <div class="table-toolbar"><h2 id="rules-count">Patterns</h2><span id="page-info" class="hint"></span></div>
+  <div id="pattern-list" aria-live="polite"></div>
+</section>
+<details class="panel" style="margin-top:20px"><summary>Explore how the patterns connect</summary>
+<div class="grid grid-2" style="margin-top:16px">
+  <div><h3>Pattern connections</h3><div class="network-wrap"><svg id="network-svg" class="network-svg"></svg><div class="zoom-controls"><button id="zoom-in" title="Zoom in">+</button><button id="zoom-out" title="Zoom out">−</button><button id="zoom-reset">Reset</button></div></div></div>
+  <div><h3>Connection strength</h3><p class="hint">Single condition and single outcome only; higher values mean a stronger association.</p><div class="heatmap-wrap"><table class="heatmap" id="heatmap-table"></table></div></div>
+</div></details>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/d3.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/prescriptions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/explorer.js') }}"></script>
+{% endblock %}

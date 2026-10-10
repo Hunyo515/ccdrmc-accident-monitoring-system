@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · Municipal Disaster Risk Reduction Management Council (MDRRMC)</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+  <video class="background-video" id="background-video" muted loop playsinline preload="metadata" aria-hidden="true" tabindex="-1"><source src="{{ url_for('static', filename='video/login-background.mp4', v='f8ebf0c934be') }}" type="video/mp4"></video>
+  <div class="background-shade"></div>
+  <main class="login-layout">
+    <div class="login-stack">
+      <header class="agency"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Municipal Disaster Risk Reduction Management Council (MDRRMC) seal"><div><strong>Municipal Disaster Risk Reduction Management Council (MDRRMC)</strong><span>Echague, Isabela</span></div></header>
+    <section class="login-card" aria-labelledby="login-title">
+      <h1 id="login-title">Login</h1><p class="intro">Welcome back!</p>
+      {% if error %}<div class="login-error" role="alert">{{ error }}</div>{% endif %}
+      <form method="post" action="{{ url_for('auth.login') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="field-label" for="username">Username</label>
+        <div class="input-field"><input id="username" name="username" type="text" autocomplete="username" placeholder="Enter your username" required maxlength="128" value="{{ request.form.get('username', '') }}" autocapitalize="none" spellcheck="false"></div>
+        <label class="field-label" for="password">Password</label>
+        <div class="input-field password-field"><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required maxlength="256"><button type="button" id="password-toggle" aria-label="Show password" aria-pressed="false">Show</button></div>
+        <button class="sign-in" type="submit">Login</button>
+      </form>
+      <p class="access-note">Authorized personnel only.<br>Need access? Contact your system administrator.</p>
+    </section>
+    </div>
+  </main>
+  <button class="motion-toggle" id="motion-toggle" type="button" hidden>Pause background</button>
+  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+</body>
+</html>

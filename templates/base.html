@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ app_name }}{% block title_suffix %}{% endblock %}</title>
+<link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block head %}{% endblock %}
+</head>
+<body>
+<div class="app-shell" id="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="brand">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="{{ app_name }} seal" class="brand-logo"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="brand-mark-fallback">{{ icon('triangle-alert', 'icon-sm') }}</div>
+        <div class="brand-text">
+          <strong>{{ app_name_line1 }}<br>{{ app_name_line2 }}</strong>
+        </div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="{{ url_for('views.overview') }}" class="{{ 'active' if active == 'overview' else '' }}" title="Overview">
+        {{ icon('layout-dashboard') }} <span class="nav-label">Overview</span>
+      </a>
+      <a href="{{ url_for('views.explorer') }}" class="{{ 'active' if active == 'explorer' else '' }}" title="Patterns">
+        {{ icon('git-branch') }} <span class="nav-label">Patterns</span>
+      </a>
+      <a href="{{ url_for('views.accident_map') }}" class="{{ 'active' if active == 'map' else '' }}" title="Accident Map">
+        {{ icon('map-pin') }} <span class="nav-label">Accident Map</span>
+      </a>
+      <a href="{{ url_for('views.data') }}" class="{{ 'active' if active == 'data' else '' }}" title="Data">
+        {{ icon('clipboard-check') }} <span class="nav-label">Data</span>
+      </a>
+    </nav>
+    <form class="sidebar-logout" method="post" action="{{ url_for('auth.logout') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn secondary" title="Sign out">{{ icon('chevron-left') }} <span class="nav-label">Sign out</span></button>
+    </form>
+  </aside>
+  <button class="sidebar-toggle" id="sidebar-toggle" title="Collapse sidebar" aria-label="Toggle sidebar">
+    {{ icon('chevron-left') }}
+  </button>
+  <main class="content {{ 'patterns-page' if active == 'explorer' else '' }}">
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+<div class="modal-overlay" id="help-modal-overlay">
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h2 id="help-modal-title">Guide</h2>
+      <button class="modal-close" id="help-modal-close" aria-label="Close">{{ icon('x') }}</button>
+    </div>
+    <div class="modal-body" id="help-modal-body"></div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/common.js') }}"></script>
+<script>
+window.ICONS = {
+{%- set icon_names = ['layout-dashboard','git-branch','sliders-horizontal','map-pin','book-open','menu',
+   'panel-left','chevron-up','chevron-down','chevron-left','trending-up','trending-down','triangle-alert','search',
+   'zoom-in','zoom-out','calendar','clock','building-2','users','car','route','activity',
+   'chevrons-up-down','x','check','maximize-2','minimize-2','corner-down-right','info','circle-alert',
+   'car-front','footprints','circle-help','upload','flame','file-up','check','clipboard-check'] -%}
+{%- for name in icon_names %}
+  "{{ name }}": {{ icon(name)|tojson }}{{ "," if not loop.last }}
+{%- endfor %}
+};
+</script>
+<script>
+(function () {
+  const shell = document.getElementById("app-shell");
+  const toggle = document.getElementById("sidebar-toggle");
+  const collapsed = localStorage.getItem("sidebarCollapsed") === "1";
+  if (collapsed) shell.classList.add("collapsed");
+  toggle.addEventListener("click", () => {
+    if (window.matchMedia('(max-width: 980px)').matches) {
+      shell.classList.toggle('mobile-open');
+      toggle.setAttribute('aria-expanded', String(shell.classList.contains('mobile-open')));
+      return;
+    }
+    shell.classList.toggle("collapsed");
+    localStorage.setItem("sidebarCollapsed", shell.classList.contains("collapsed") ? "1" : "0");
+  });
+
+  // Shared help modal, content supplied per-page via window.openHelp(title, html)
+  const overlay = document.getElementById("help-modal-overlay");
+  window.openHelp = (title, bodyHtml) => {
+    document.getElementById("help-modal-title").textContent = title;
+    document.getElementById("help-modal-body").innerHTML = bodyHtml;
+    overlay.classList.add("open");
+  };
+  const closeHelp = () => overlay.classList.remove("open");
+  document.getElementById("help-modal-close").addEventListener("click", closeHelp);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) closeHelp(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeHelp(); });
+})();
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
