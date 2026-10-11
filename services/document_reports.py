@@ -35,48 +35,94 @@ def analysis_pdf(frame, filters, revision):
     from reportlab.lib import colors
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.pagesizes import A4
-    from reportlab.platypus import SimpleDocTemplate,Paragraph,Spacer,Table,TableStyle,PageBreak,KeepTogether
-    from reportlab.graphics.shapes import Drawing,Rect,String
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, KeepTogether
+    from services import overview_service as overview
+    from services.report_charts import bars, series_chart, accident_map
+    from services.contextual_prescriptions import plain_language
     from arm.pipeline import ARMPipeline
-    styles=getSampleStyleSheet();styles['Normal'].fontSize=10;styles['Normal'].leading=15
-    styles['Title'].textColor=colors.HexColor('#063C29')
-    styles.add(ParagraphStyle(name='SmallNote',fontSize=9,leading=13,textColor=colors.HexColor('#405447')))
-    output=BytesIO();doc=SimpleDocTemplate(output,pagesize=A4,rightMargin=42,leftMargin=42,topMargin=42,bottomMargin=42)
-    story=[]
-    def p(text,style='Normal'):return Paragraph(escape(str(text)),styles[style])
-    story += [p('Road Accident Analysis','Title'),p('Municipal Disaster Risk Reduction Management Council | Echague, Isabela','SmallNote'),Spacer(1,12)]
-    generated=datetime.now(ZoneInfo('Asia/Manila')).strftime('%d %B %Y, %I:%M %p PHT')
-    story += [p('Generated: '+generated,'SmallNote'),p('Filters: '+(', '.join(f'{k.replace("_"," ")}: {v}' for k,v in filters.items() if v) or 'All approved records'),'SmallNote'),p('Dataset revision: '+revision,'SmallNote'),Spacer(1,16)]
-    severity=frame.severity.value_counts() if len(frame) else {}
-    summary=[['Approved records','Fatal','Non-Fatal','Property damage','Unknown'],[str(len(frame)),str(severity.get('Fatal',0)),str(severity.get('Non-Fatal',0)),str(severity.get('Damage-to-Property',0)),str(severity.get('Unknown',0))]]
-    table=Table(summary,colWidths=[101.6]*5);table.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.HexColor('#e7f1eb')),('TEXTCOLOR',(0,0),(-1,-1),colors.HexColor('#063C29')),('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),('BOTTOMPADDING',(0,0),(-1,-1),12),('TOPPADDING',(0,0),(-1,-1),12)]));story += [table,Spacer(1,12),p('Totals count submitted records, not necessarily distinct incidents. Pending submissions and unapproved edits are excluded.','SmallNote')]
+    styles = getSampleStyleSheet()
+    styles['Normal'].fontSize = 10
+    styles['Normal'].leading = 15
+    styles['Title'].textColor = colors.HexColor('#063C29')
+    styles.add(ParagraphStyle(name='SmallNote', fontSize=8.5, leading=12, textColor=colors.HexColor('#405447')))
+    output = BytesIO()
+    doc = SimpleDocTemplate(output, pagesize=A4, rightMargin=42, leftMargin=42, topMargin=38, bottomMargin=42,
+                            title='Road Accident Analysis Report', author='MDRRMC Echague')
+    def p(text, style='Normal'):
+        return Paragraph(escape(plain_language(str(text))), styles[style])
+    story = [p('Road Accident Analysis Report', 'Title'),
+             p('Echague, Isabela | Municipal Disaster Risk Reduction Management Council', 'SmallNote'), Spacer(1, 10)]
+    generated = datetime.now(ZoneInfo('Asia/Manila')).strftime('%d %B %Y, %I:%M %p PHT')
+    story += [p('Generated: '+generated, 'SmallNote'),
+              p('Filters: '+(', '.join(f'{k.replace("_", " ")}: {v}' for k,v in filters.items() if v) or 'All approved records'), 'SmallNote'),
+              Spacer(1, 10),
+              p('Counts refer to approved records, not necessarily separate incidents. All charts use the selected filters.', 'SmallNote')]
+    def chart(title, drawing, note='', rows=None):
+        block = [p(title, 'Heading2'), drawing]
+        if rows:
+            maximum = max(r['count'] for r in rows)
+            winners = [plain_language(str(r['label'])) for r in rows if r['count'] == maximum]
+            if maximum:
+                names = ' and '.join(winners)
+                verb = 'has' if len(winners)==1 else 'tie for'
+                message = f'<b>{escape(names)}</b> {verb} the highest count, with <b>{maximum:,}</b> recorded crashes' + (' each.' if len(winners)>1 else '.')
+            else: message = 'No records with a known category are available for this chart.'
+            block.append(Paragraph(message, styles['Normal']))
+        if note: block.append(p(note, 'SmallNote'))
+        story.append(KeepTogether(block))
     if frame.empty:
-        story.append(p('No approved records match these filters.','Heading2'))
+        story.append(p('No approved records match these filters.', 'Heading2'))
     else:
-        def chart(column,title):
-            counts=frame[column].fillna('Unknown').astype(str).value_counts().head(8)
-            height=len(counts)*30+12;drawing=Drawing(510,height);maximum=max(counts.max(),1)
-            for i,(label,count) in enumerate(counts.items()):
-                y=height-25-i*30
-                label=label if len(label)<=30 else label[:27]+'...'
-                drawing.add(String(0,y+3,label,fontSize=9))
-                width=270*count/maximum
-                drawing.add(Rect(175,y,width,16,fillColor=colors.HexColor('#4D896A'),strokeColor=None))
-                drawing.add(String(182+width,y+3,str(count),fontSize=9))
-            return [p(title,'Heading2'),drawing,Spacer(1,8)]
-        story += chart('barangay','Barangays with the most records')
-        story += chart('cause','Leading recorded causes')
-        story += [PageBreak()]+chart('time_period','Time periods')+chart('collision_type','Collision types')
-        candidate=ARMPipeline();candidate.data=frame.copy();candidate._staging=True;candidate.run(force=True)
-        rules,_=rules_service.filter_rules(candidate.rules,limit=10)
-        story += [PageBreak(),p('Patterns and suggested actions','Heading1'),p('Patterns below are recomputed using only the filtered records in this report. Support: at least 5%; confidence: at least 60%; lift: at least 1.20. Associations do not establish causation.','SmallNote'),Spacer(1,12)]
-        if not rules:story.append(p('No patterns meet the thresholds for this selection.'))
-        for index,rule in enumerate(rules,1):
-            block=[p(f'{index}. {rule["antecedent_label"]} leads to {rule["consequent_label"]}','Heading3'),p(f'Share: {rule["support"]:.1%} | Match rate: {rule["confidence"]:.1%} | Lift: {rule["lift"]:.2f}','SmallNote')]
+        data = overview.build_overview(frame, {})
+        groups = overview.build_barangay_breakdown(frame, {})
+        yearly = data['yearly_trend']
+        chart('Crash records over the years', series_chart([r['year'] for r in yearly], {'Records':[r['count'] for r in yearly]}, line=True), rows=[dict(label=r['year'],count=r['count']) for r in yearly])
+        chart('Crash records by month', series_chart([r['label'][:3] for r in data['month_distribution']], {'Records':[r['count'] for r in data['month_distribution']]}), 'Months combine selected years.', rows=data['month_distribution'])
+        story.append(PageBreak())
+        chart('Crash records by hour', series_chart([r['label'] for r in data['hourly_distribution']], {'Records':[r['count'] for r in data['hourly_distribution']]}, hourly=True), rows=data['hourly_distribution'])
+        story.append(PageBreak())
+        chart('Crash records by day of week', bars(data['day_distribution']), rows=data['day_distribution'])
+        chart('Leading recorded causes', bars(data['top_causes']), rows=data['top_causes'])
+        story.append(PageBreak())
+        chart('Collision types', bars(data['collision_types']), rows=data['collision_types'])
+        chart('Vehicles involved', bars(data['top_vehicles']), rows=data['top_vehicles'])
+        story.append(PageBreak())
+        chart('Barangays with the most crash records', bars(data['top_barangays']), rows=data['top_barangays'])
+        chart('Top barangays by day of week', series_chart([d[:3] for d in groups['days']], groups['by_day']), rows=[dict(label=f'{name} on {day}',count=count) for name,values in groups['by_day'].items() for day,count in zip(groups['days'],values)])
+        story.append(PageBreak())
+        chart('Top barangays by month', series_chart(groups['months'], groups['by_month']), rows=[dict(label=f'{name} in {month}',count=count) for name,values in groups['by_month'].items() for month,count in zip(groups['months'],values)])
+        story.append(PageBreak())
+        map_image, unmatched, peak = accident_map(frame)
+        chart('Accident map - Echague barangays', map_image,
+              f'Pale orange: fewer records. Deeper red: more records (highest barangay count: {peak}). Unshaded areas have no matched records. Soft edges are a visual treatment, not exact crash locations or a prediction of danger. {unmatched} records could not be matched to a barangay boundary.', rows=data['top_barangays'])
+        story.append(p('Boundaries: philippines-json-maps, 2019 edition (MIT license). Barangay totals include records with missing coordinates.', 'SmallNote'))
+        candidate = ARMPipeline(); candidate.data = frame.copy(); candidate._staging = True; candidate.run(force=True)
+        ranked, _ = rules_service.filter_rules(candidate.rules, limit=5000)
+        rules, seen = [], set()
+        for rule in ranked:
+            key = frozenset(tuple(i) for i in rule['items'])
+            if key not in seen:
+                rules.append(rule); seen.add(key)
+            if len(rules) == 10: break
+        story += [PageBreak(), p('Patterns and suggested actions', 'Heading1'),
+                  p('These conditions often appear together; this does not prove that one caused another. Up to 10 different patterns are shown. Each appears in at least 5% of selected records; the second condition appears in at least 60% of records with the first, and at least 20% more often than its usual frequency.', 'SmallNote'),
+                  p('Engineering actions require a site check and road-owner approval. Select signs, crossings, barriers or speed-control measures to suit the road; the pattern alone does not confirm a defect.', 'SmallNote'), Spacer(1, 10)]
+        if not rules: story.append(p('No patterns meet the selection rules for these records.'))
+        for index, rule in enumerate(rules, 1):
+            heading = f'{index}. {rule["antecedent_label"]} / {rule["consequent_label"]}'
+            block = [p(heading, 'Heading3'), p(f'Both appear in {rule["support"]:.1%} of selected records. Among records with {rule["antecedent_label"]}, {rule["confidence"]:.1%} also include {rule["consequent_label"]}.', 'SmallNote')]
             for action in prescription_service.get().match_rule(rule):
-                label={'enforcement':'Enforcement','engineering':'Engineering','education':'Public Information & Education'}.get(action['agency'],action['agency'])
-                block.extend([p(label,'Heading4'),p(action['action'])])
-            block.append(Spacer(1,12));story.append(KeepTogether(block))
-    def footer(canvas,document):
-        canvas.setFont('Helvetica',8);canvas.setFillColor(colors.HexColor('#405447'));canvas.drawString(42,24,'MDRRMC Echague | Approved records');canvas.drawRightString(A4[0]-42,24,f'Page {document.page}')
-    doc.build(story,onFirstPage=footer,onLaterPages=footer);return output.getvalue()
+                label = {'enforcement':'Barangay Tanod', 'engineering':'Engineering', 'education':'Public Information & Education'}[action['agency']]
+                block.extend([p(label, 'Heading4'), p(action['action'])])
+            story.append(KeepTogether(block+[Spacer(1, 12)]))
+        story += [Spacer(1, 12), p('Putting the actions into practice', 'Heading2'),
+                  p('Have the municipal road-safety team select priority sites, name a responsible office and set a target date. Log hazards, patrol hours and repairs. Review speeds, observed unsafe behavior and new crash records after implementation; a short-term change in counts alone does not prove that an action worked.'),
+                  p('Guidance used', 'Heading2'),
+                  p('WHO Save LIVES road-safety package: speed management, safer roads, enforcement and emergency response. https://www.who.int/publications/i/item/save-lives-a-road-safety-technical-package', 'SmallNote'),
+                  p('DILG guidance on barangay tanods: traffic assistance, patrols and reporting, with police and emergency-service coordination. https://region6.dilg.gov.ph/ligtas-na-paaralan-dilg-deploys-barangay-tanods-to-strengthen-school-safety-nationwide/', 'SmallNote')]
+    def footer(canvas, document):
+        canvas.setFont('Helvetica', 8); canvas.setFillColor(colors.HexColor('#405447'))
+        canvas.drawString(42, 24, 'MDRRMC Echague | Road Accident Analysis Report')
+        canvas.drawRightString(A4[0]-42, 24, f'Page {document.page}')
+    doc.build(story, onFirstPage=footer, onLaterPages=footer)
+    return output.getvalue()

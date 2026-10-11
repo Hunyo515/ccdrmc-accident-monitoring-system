@@ -96,36 +96,33 @@ def contextual_actions(rule, labels):
     context = '; '.join(f'{labels[f]}: {PERIODS.get(v,v)}' for f,v in items)
     digest = hashlib.sha256(repr(sorted(items)).encode()).hexdigest()[:12]
     values = dict(items)
-    # One primary intervention, qualified by the complete rule context.
-    priority = ('cause', 'collision_type', 'vehicle_involved', 'severity', 'barangay', 'day', 'time_period')
-    primary = next(f for f in priority if f in values)
-    target = []
-    if 'vehicle_involved' in values: target.append('involving ' + values['vehicle_involved'])
-    if 'collision_type' in values: target.append('recorded as ' + values['collision_type'])
-    if 'severity' in values: target.append('with ' + values['severity'].lower() + ' outcomes')
-    if 'barangay' in values: target.append('in ' + values['barangay'])
-    if 'day' in values: target.append('on ' + values['day'])
-    scope = (' Focus on records ' + ', '.join(target) + '.') if target else ''
-    period = PERIODS.get(values.get('time_period'), values.get('time_period'))
-    night = values.get('time_period') in ('8:01PM-12MN', '12:01AM-4AM')
+    from services.rule_actions import concise_actions
     actions = []
-    for i, domain in enumerate(DOMAINS):
-        core = feature_steps(primary, values[primary])[i]
-        if domain == 'education':
-            core = 'Use official LGU or barangay Facebook posts and a community briefing to ' + core[0].lower() + core[1:]
-        if domain == 'education' and primary == 'barangay':
-            core = 'Run a barangay road-safety campaign on official LGU and barangay Facebook pages, using verified local hazard reports.'
-        timing = ''
-        if period and primary != 'time_period':
-            if domain == 'enforcement': timing = f' Schedule this activity during {period}, using a safe observation or stopping location.'
-            elif domain == 'engineering': timing = f' Inspect during {period}' + (' to check lighting and visibility; schedule repairs in daylight.' if night else '; schedule repairs outside busy hours.')
-            else: timing = f' Publish the reminder before {period} and repeat it near the start of that window.'
-        elif domain == 'education' and primary == 'time_period':
-            core = f'Publish official LGU or barangay Facebook reminders before {period} about ' + ('working lights, safe speeds and resting before driving.' if night else 'safe speeds, following distance and checking for other road users.')
-        action = core + scope + timing
+    for domain, text in zip(DOMAINS, concise_actions(values, PERIODS)):
+        action = plain_language(text)
         actions.append(dict(id=f'PLAN-{digest}-{domain}', agency=domain, status='Candidate',
             status_label='Proposed', validation_status='Pending expert validation',
             action=action, steps=[action], context=context, applies_when=context,
             matched_on=[dict(field=labels[f],value=PERIODS.get(v,v)) for f,v in items],
             evidence_source=SOURCE, contextual=True))
     return actions
+
+
+def plain_language(text):
+    """Explain category labels and road terms in everyday words."""
+    replacements = {
+        'Self-accident': 'Single-vehicle crash', 'self-accident': 'single-vehicle crash',
+        'Single Motor': 'Motorcycle', 'Non-Fatal': 'Non-fatal injury',
+        'Damage-to-Property': 'Property damage only', 'manoeuvres': 'movements',
+        'manoeuvring': 'turning and parking', 'sight lines': 'clear views',
+        'sight distance': 'distance drivers can see ahead', 'surface friction': 'road grip',
+        'traffic-calming treatments': 'road changes to slow traffic',
+        'conflict points': 'places where road users cross paths',
+        'vulnerable road users': 'people walking, cycling or riding motorcycles',
+        'restraint use': 'seat-belt use', 'restraint and': 'seat-belt and',
+        'roadworthiness': 'vehicle safety', 'forgiving roadsides': 'safer roadsides',
+        'Audit': 'Inspect', 'audit': 'inspection', 'rule-specific': 'relevant',
+    }
+    for original, replacement in PERIODS.items(): text = text.replace(original, replacement)
+    for original, replacement in replacements.items(): text = text.replace(original, replacement)
+    return text

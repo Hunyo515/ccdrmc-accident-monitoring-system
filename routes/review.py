@@ -111,4 +111,4 @@ def pdf_report():
     from flask import Response
     from services.document_reports import analysis_pdf
     frame,filters,meta=report_selection()
-    return Response(analysis_pdf(frame,filters,meta.get('dataset_revision','')),mimetype='application/pdf',headers={'Content-Disposition':'attachment; filename="mdrrmc-analysis.pdf"'})
+    return Response(analysis_pdf(frame,filters,meta.get('dataset_revision','')),mimetype='application/pdf',headers={'Content-Disposition':'attachment; filename="road-accident-analysis-report.pdf"'})

@@ -58,7 +58,7 @@ def test_all_seven_features_have_three_domain_steps():
     assert {a['agency'] for a in plans}=={'enforcement','engineering','education'}
     assert all(len(a['matched_on'])==7 for a in plans)
     assert all('Pending' in a['validation_status'] for a in plans)
-    assert 'Facebook' in next(a['action'] for a in plans if a['agency']=='education')
+    assert 'helmet' in next(a['action'] for a in plans if a['agency']=='education')
     assert '12 midnight' in next(a['action'] for a in plans if a['agency']=='enforcement')
 
 
